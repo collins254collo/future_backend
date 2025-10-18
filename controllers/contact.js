@@ -32,7 +32,7 @@ exports.sendMessage = async (req, res) => {
       message: "Message received successfully!" 
     });
 
-    //  Send emails asynchronously (won’t block response)
+    //  Send emails asynchronously (won't block response)
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: process.env.EMAIL_USER,
@@ -45,7 +45,19 @@ exports.sendMessage = async (req, res) => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Thanks for reaching out!",
-      html: `<p>Hi ${name},</p><p>Thank you for your message. I’ll get back to you soon.</p>`
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Hi ${name}!</h2>
+          <p>Thank you for contacting me through my portfolio. I've received your message and will get back to you as soon as possible.</p>
+          <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0;">
+            <p style="margin: 0;"><strong>Your message:</strong></p>
+            <p style="margin: 10px 0 0 0; color: #666; white-space: pre-wrap;">${message}</p>
+          </div>
+          <p>Best regards,<br><strong>Collins Wanjiru</strong></p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px;">This is an automated confirmation. Please do not reply to this email.</p>
+        </div>
+      `
     };
 
     // Run asynchronously (no await)
