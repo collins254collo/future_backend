@@ -23,25 +23,25 @@ app.use('/uploads', express.static('uploads'));
 
 
 
-// Test email route
-// app.get("/test-email", async (req, res) => {
+// app.get("/test-resend", async (req, res) => {
 //   try {
-//     const info = await transporter.sendMail({
-//       from: process.env.EMAIL_USER,
-//       to: process.env.EMAIL_USER, // send to yourself first
-//       subject: "Test Email from Colman Portfolio",
-//       text: "If you see this, Nodemailer is working correctly 🚀",
+//     const data = await resend.emails.send({
+//       from: "Test <onboarding@resend.dev>",
+//       to: process.env.EMAIL_USER,
+//       subject: "Render test email",
+//       text: "If you see this, Resend works!",
 //     });
-
-//     console.log("✅ Email sent:", info.response);
-//     res.send("✅ Email sent: " + info.response);
+//     res.json({ success: true, data });
 //   } catch (err) {
-//     console.error("❌ Error sending email:", err);
-//     res.status(500).send("Error: " + err.message);
+//     console.error(err);
+//     res.status(500).json({ success: false, error: err.message });
 //   }
 // });
 
+
 // Routes
+
+
 app.use('/api/contact', contactRouter);
 // app.use('/api/projects', projectRouter);
 
