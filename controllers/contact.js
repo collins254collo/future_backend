@@ -13,10 +13,10 @@ const transporter = nodemailer.createTransport({
 
 exports.sendMessage = async (req, res) => {
   try {
-    const { name, email, subject,message } = req.body;
+    const { name, email, message } = req.body;
 
     // Validation
-    if (!name || !email || !subject || !message) {
+    if (!name || !email  || !message) {
       return res.status(400).json({ 
         success: false, 
         error: "All fields are required" 
@@ -26,7 +26,7 @@ exports.sendMessage = async (req, res) => {
     // Save to Supabase
     const { data, error } = await supabase
       .from("messages")
-      .insert([{ name, email, subject, message }])
+      .insert([{ name, email, message }])
       .select();
 
     if (error) throw error;
