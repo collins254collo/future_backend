@@ -4,11 +4,11 @@ require("dotenv").config();
 
 // Create transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 exports.sendMessage = async (req, res) => {
@@ -18,6 +18,7 @@ exports.sendMessage = async (req, res) => {
       return res.status(400).json({ success: false, error: "All fields are required" });
     }
 
+    // Insert into Supabase
     const { data, error } = await supabase
       .from("messages")
       .insert([{ name, email, message }])
@@ -25,24 +26,18 @@ exports.sendMessage = async (req, res) => {
 
     if (error) throw error;
 
-    //  Send response immediately to avoid timeout
-    res.status(201).json({ 
-      success: true, 
-      data,
-      message: "Message received successfully!" 
-    });
-
-    //  Send emails asynchronously (won't block response)
+    //  Email to you
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
       subject: `New Portfolio Message from ${name}`,
       replyTo: email,
-      html: `<p><strong>Name:</strong> ${name}</p><p>${message}</p>`
+      html: `<p><strong>Name:</strong> ${name}</p><p>${message}</p>`,
     };
 
+    //  Auto-reply to visitor
     const autoReply = {
-      from: process.env.EMAIL_USER,
+      from: `"Collins Wanjiru | Portfolio" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Thanks for reaching out!",
       html: `
@@ -57,13 +52,24 @@ exports.sendMessage = async (req, res) => {
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           <p style="color: #999; font-size: 12px;">This is an automated confirmation. Please do not reply to this email.</p>
         </div>
-      `
+      `,
     };
 
-    // Run asynchronously (no await)
-    transporter.sendMail(mailOptions).catch(console.error);
-    transporter.sendMail(autoReply).catch(console.error);
+    //  Wait for both to finish and log results
+    const [sentToYou, sentToClient] = await Promise.all([
+      transporter.sendMail(mailOptions),
+      transporter.sendMail(autoReply),
+    ]);
 
+    console.log(" Email to you:", sentToYou.response);
+    console.log(" Auto-reply:", sentToClient.response);
+
+    //  Now respond to frontend
+    res.status(201).json({
+      success: true,
+      data,
+      message: "Message and emails sent successfully!",
+    });
   } catch (err) {
     console.error("Contact form error:", err);
     res.status(400).json({ success: false, error: err.message });
