@@ -24,18 +24,7 @@ exports.sendMessage = async (req, res) => {
     if (error) throw error;
 
     //  Send notification to you
-    await resend.emails.send({
-      from: "Colman Tech Savvy <onboarding@resend.dev>", // verified sender
-      to: process.env.EMAIL_USER,
-      subject: ` New Portfolio Message from ${name}`,
-      html: `
-        <h2>New Contact Message</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
-      `,
-    });
+   
 
     //  Auto-reply to the visitor
     await resend.emails.send({
