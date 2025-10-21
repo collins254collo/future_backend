@@ -1,18 +1,23 @@
 const { supabase } = require("../config/db.js");
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 require("dotenv").config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 exports.sendMessage = async (req, res) => {
   try {
     const { name, email, message } = req.body;
 
     if (!name || !email || !message) {
-      return res.status(400).json({
-        success: false,
-        error: "All fields are required",
-      });
+      return res.status(400).json({ success: false, error: "All fields required" });
     }
 
     //  Save to Supabase
@@ -23,39 +28,46 @@ exports.sendMessage = async (req, res) => {
 
     if (error) throw error;
 
-    //  Send notification to you
-   
-
-    //  Auto-reply to the visitor
-    await resend.emails.send({
-      from: "Collins Wanjiru <onboarding@resend.dev>", // verified sender
-      to: email,
-      subject: "Thanks for reaching out!",
+    //  Send message to YOU (from sender)
+    await transporter.sendMail({
+      from: `"${name}" <${email}>`, 
+      to: process.env.RECEIVER_EMAIL,
+      subject: ` Portfolio message from ${name}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Hi ${name}!</h2>
-          <p>Thank you for contacting me through my portfolio. I've received your message and will get back to you soon.</p>
-          <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0;">
-            <p><strong>Your message:</strong></p>
-            <p style="color: #666; white-space: pre-wrap;">${message}</p>
-          </div>
-          <p>Best regards,<br><strong>Collins Wanjiru</strong></p>
-          <hr style="border: none; border-top: 1px solid #eee;">
-          <p style="color: #999; font-size: 12px;">This is an automated confirmation. Please do not reply to this email.</p>
+        <div style="font-family: Arial, sans-serif;">
+          <h2>New Message from Portfolio</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Message:</strong></p>
+          <p style="white-space: pre-wrap;">${message}</p>
         </div>
       `,
     });
 
-    return res.status(201).json({
+    //  2. Auto-reply to sender
+    await transporter.sendMail({
+      from: `"Collins Njogu" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Thanks for contacting Collins Njogu ",
+      html: `
+        <div style="font-family: Arial, sans-serif;">
+          <h2>Hey ${name},</h2>
+          <p>Thank you for reaching out through my portfolio! I’ve received your message and will get back to you as soon as possible.</p>
+          <p><strong>Your Message:</strong></p>
+          <p style="white-space: pre-wrap;">${message}</p>
+          <hr />
+          <p>Best regards,<br/>Collins Njogu</p>
+        </div>
+      `,
+    });
+
+    res.status(201).json({
       success: true,
       data,
-      message: "Message sent successfully and auto-reply delivered ✅",
+      message: "Email sent to owner and auto-reply sent to sender ",
     });
   } catch (err) {
     console.error("Contact form error:", err);
-    return res.status(400).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 };

@@ -12,10 +12,14 @@ const port = 8080;
 // Middleware
 app.use(
   cors({
-    origin: "https://collins-wamiatu.vercel.app",
+    origin: [
+      "https://collins-wamiatu.vercel.app",
+      "http://localhost:3000"
+    ],
     credentials: true,
   })
 );
+
 
 app.use(bodyParser.json());
 app.use(express.static('public'));
