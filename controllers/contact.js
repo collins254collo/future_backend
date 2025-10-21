@@ -44,7 +44,7 @@ exports.sendMessage = async (req, res) => {
       `,
     });
 
-    //  2. Auto-reply to sender
+    //  Auto-reply to sender
     await transporter.sendMail({
       from: `"Collins Njogu" <${process.env.SMTP_USER}>`,
       to: email,
